@@ -14,4 +14,5 @@ class ProductRead(ProductBase):
     created_at: Optional[datetime] = None
 
     class Config:
-        orm_mode = True
+        # Pydantic v2: use from_attributes instead of orm_mode
+        from_attributes = True
