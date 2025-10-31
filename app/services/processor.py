@@ -1,10 +1,8 @@
 from typing import Iterable, List, Dict, Any, Tuple
 from collections import Counter
+import re
 
 def _get_price(item: Any) -> float:
-    """
-    Extrai o preço de um item (dict ou objeto). Retorna None se não for possível.
-    """
     try:
         if isinstance(item, dict):
             val = item.get("price")
@@ -14,10 +12,20 @@ def _get_price(item: Any) -> float:
             return None
         if isinstance(val, (int, float)):
             return float(val)
+
         s = str(val).strip()
-        for ch in ["R$", "$", "€", "£"]:
+        for ch in ["R$", "$", "€", "£", " "]:
             s = s.replace(ch, "")
-        s = s.replace(".", "").replace(",", ".")
+
+        if "." in s and "," in s:
+            s = s.replace(".", "").replace(",", ".")
+        elif "," in s and "." not in s:
+            s = s.replace(",", ".")
+        s = re.sub(r"[^\d\.-]", "", s)
+
+        if not s:
+            return None
+
         return float(s)
     except Exception:
         return None
@@ -40,15 +48,30 @@ def _as_tuples_with_price(products: Iterable[Any]) -> List[Tuple[Any, float]]:
             rows.append((p, price))
     return rows
 
+class ItemProxy:
+    def __init__(self, obj: Any):
+        self._obj = obj
+
+    def get(self, key, default=None):
+        return getattr(self._obj, key, default)
+
+    def __getattr__(self, name):
+        return getattr(self._obj, name)
+
+    def __repr__(self):
+        return f"<ItemProxy {repr(self._obj)}>"
+
 def most_expensive(products: Iterable[Any], n: int = 1) -> List[Any]:
     rows = _as_tuples_with_price(products)
     rows.sort(key=lambda x: x[1], reverse=True)
-    return [item for item, _ in rows[:max(0, n)]]
+    selected = [item for item, _ in rows[:max(0, n)]]
+    return [s if isinstance(s, dict) else ItemProxy(s) for s in selected]
 
 def cheapest(products: Iterable[Any], n: int = 1) -> List[Any]:
     rows = _as_tuples_with_price(products)
     rows.sort(key=lambda x: x[1])
-    return [item for item, _ in rows[:max(0, n)]]
+    selected = [item for item, _ in rows[:max(0, n)]]
+    return [s if isinstance(s, dict) else ItemProxy(s) for s in selected]
 
 def count_by_category(products: Iterable[Any], key: str = "source") -> Dict[str, int]:
     counter = Counter()

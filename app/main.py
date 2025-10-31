@@ -1,18 +1,19 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from contextlib import asynccontextmanager
 
 from app.db.session import engine, get_db
 from app.db.base import Base
 from app.db import models
 from app.api import routes
 
-app = FastAPI(title="Ralts API")
-
-@app.on_event("startup")
-async def startup():
-    # criar tabelas assincronamente em dev
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    yield
+
+app = FastAPI(title="Ralts API", lifespan=lifespan)
 
 app.include_router(routes.router)
 

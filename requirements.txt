@@ -7,4 +7,6 @@ greenlet
 scrapy
 lxml
 twisted
-scrapy
+pytest
+pytest-asyncio
+httpx

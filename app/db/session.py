@@ -14,5 +14,7 @@ async_session = async_sessionmaker(
 
 async def get_db():
     async with async_session() as session:
-        yield session
-        db.close()
+        try:
+            yield session
+        finally:
+            pass
