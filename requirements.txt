@@ -4,3 +4,6 @@ sqlalchemy
 pydantic
 aiosqlite
 greenlet
+scrapy
+lxml
+twisted
