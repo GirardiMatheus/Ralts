@@ -7,6 +7,7 @@ from app.db import models
 from app.schemas.product import ProductCreate, ProductRead
 from app.db.session import get_db
 from app.services.scraper_runner import start_scraper
+from app.services.processor import average_price, most_expensive, cheapest, count_by_category
 
 router = APIRouter()
 
@@ -36,3 +37,24 @@ async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
 async def scrape_start():
     info = start_scraper("product_spider")
     return {"status": "started", **info}
+
+@router.get("/products/stats", status_code=status.HTTP_200_OK)
+async def products_stats(db: AsyncSession = Depends(get_db), top: int = 5):
+
+    result = await db.execute(select(models.Product))
+    products = result.scalars().all()
+
+    avg = average_price(products)
+    most = most_expensive(products, n=top)
+    least = cheapest(products, n=top)
+    counts = count_by_category(products, key="source")
+
+    def to_simple(p):
+        return {"id": getattr(p, "id", None), "name": getattr(p, "name", None), "price": float(getattr(p, "price", 0) or 0)}
+
+    return {
+        "average_price": avg,
+        "most_expensive": [to_simple(p) for p in most],
+        "cheapest": [to_simple(p) for p in least],
+        "count_by_source": counts,
+    }
