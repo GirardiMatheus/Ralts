@@ -1,9 +1,18 @@
+import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./ralts.db"
+# usa DATABASE_URL da env quando disponível; fallback para sqlite local
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./ralts.db")
+
+# para sqlite+aiosqlite é útil passar connect_args
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 
 engine = create_async_engine(
-    SQLALCHEMY_DATABASE_URL, echo=False
+    DATABASE_URL,
+    echo=False,
+    connect_args=connect_args,
 )
 
 async_session = async_sessionmaker(
@@ -17,4 +26,5 @@ async def get_db():
         try:
             yield session
         finally:
+            # o context manager fecha a sessão
             pass

@@ -10,3 +10,4 @@ twisted
 pytest
 pytest-asyncio
 httpx
+asyncpg
