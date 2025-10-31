@@ -6,6 +6,7 @@ from sqlalchemy import select
 from app.db import models
 from app.schemas.product import ProductCreate, ProductRead
 from app.db.session import get_db
+from app.services.scraper_runner import start_scraper
 
 router = APIRouter()
 
@@ -30,3 +31,8 @@ async def get_product(product_id: int, db: AsyncSession = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
+
+@router.post("/scrape/start", status_code=status.HTTP_202_ACCEPTED)
+async def scrape_start():
+    info = start_scraper("product_spider")
+    return {"status": "started", **info}

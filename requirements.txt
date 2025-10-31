@@ -7,3 +7,4 @@ greenlet
 scrapy
 lxml
 twisted
+scrapy
