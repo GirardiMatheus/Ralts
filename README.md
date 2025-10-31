@@ -1,6 +1,12 @@
-# Ralts
+<div align="center">
+  <h1>
+    <img src="./assets/ralts.png" width="60" height="60" alt="Ralts Logo" style="vertical-align: middle; margin-right: 10px;">
+    Ralts
+  </h1>
 
-API simples para coleta e armazenamento de produtos (FastAPI + SQLAlchemy + Scrapy).
+  <p>API simples para coleta e armazenamento de produtos (FastAPI + SQLAlchemy + Scrapy).</p>
+</div>
+
 
 ## Visão geral
 - FastAPI app em `app/`
